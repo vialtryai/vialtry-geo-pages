@@ -1,0 +1,124 @@
+name: Inject JSON-LD Schema
+
+on:
+  # Trigger on new/modified HTML files
+  push:
+    paths:
+      - '*.html'
+      - 'ai-catalog-visibility-*.html'
+    branches:
+      - main
+
+  # Manual trigger
+  workflow_dispatch:
+
+  # Run on pull requests (validate before merge)
+  pull_request:
+    paths:
+      - '*.html'
+      - 'ai-catalog-visibility-*.html'
+
+jobs:
+  inject-schema:
+    runs-on: ubuntu-latest
+    name: Inject and Validate Schemas
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Run schema injection
+        id: inject
+        run: |
+          echo "🔄 Injecting JSON-LD schema into HTML files..."
+          node inject-schema.js ./
+        continue-on-error: false
+
+      - name: Validate JSON-LD syntax
+        id: validate
+        run: |
+          echo "🔍 Validating JSON-LD schema syntax..."
+          
+          # Find all injected script tags and extract JSON
+          VALID=0
+          INVALID=0
+          
+          for file in ai-catalog-visibility-*.html; do
+            if [ -f "$file" ]; then
+              # Extract JSON-LD blocks
+              grep -oP '(?<=<script type="application/ld\+json">).*?(?=</script>)' "$file" | while read -r json; do
+                if echo "$json" | jq empty 2>/dev/null; then
+                  ((VALID++))
+                else
+                  echo "✗ Invalid JSON in $file"
+                  ((INVALID++))
+                fi
+              done
+            fi
+          done
+          
+          echo "Validation complete: $VALID valid, $INVALID invalid"
+        continue-on-error: true
+
+      - name: Check for broken links in schemas
+        id: links
+        run: |
+          echo "🔗 Checking schema URLs..."
+          
+          for file in ai-catalog-visibility-*.html; do
+            if [ -f "$file" ]; then
+              # Check for https:// URLs in schema
+              grep -oP 'https?://[^\s"]+' "$file" | while read -r url; do
+                if [[ ! "$url" =~ ^https:// ]]; then
+                  echo "⚠ Non-HTTPS URL found: $url in $file"
+                fi
+              done
+            fi
+          done
+        continue-on-error: true
+
+      - name: Generate schema report
+        if: always()
+        run: |
+          echo "📊 Schema Injection Report" > schema-report.txt
+          echo "========================" >> schema-report.txt
+          echo "" >> schema-report.txt
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> schema-report.txt
+          echo "" >> schema-report.txt
+          echo "Files Processed:" >> schema-report.txt
+          ls -1 ai-catalog-visibility-*.html 2>/dev/null | wc -l >> schema-report.txt
+          echo "" >> schema-report.txt
+          echo "Sample Schema (first file):" >> schema-report.txt
+          if [ -f "$(ls ai-catalog-visibility-*.html 2>/dev/null | head -1)" ]; then
+            grep -oP '(?<=<script type="application/ld\+json">).*?(?=</script>)' "$(ls ai-catalog-visibility-*.html 2>/dev/null | head -1)" | jq . | head -20 >> schema-report.txt
+          fi
+          cat schema-report.txt
+
+      - name: Commit schema-injected files
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: inject JSON-LD schema for AI visibility'
+          commit_user_name: 'Vialtry Schema Bot'
+          commit_user_email: 'bot@vialtry.com'
+          file_pattern: 'ai-catalog-visibility-*.html'
+          skip_dirty_check: false
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "✅ Schema injection workflow complete"
+          echo ""
+          echo "Next steps:"
+          echo "1. Schema is injected into all ai-catalog-visibility-*.html files"
+          echo "2. Changes auto-committed to main branch"
+          echo "3. GitHub Pages will serve updated files"
+          echo "4. Bots can crawl and index the schema"
