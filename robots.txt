@@ -1,32 +1,131 @@
-User-agent: *
-Allow: /
+# Vialtry AI Catalog Visibility
+# robots.txt for vialtryai/vialtry-geo-pages
+# Last updated: 2026-04-28
 
-# AI Crawlers - explicitly allowed
+# ============================================================================
+# AGENTIC COMMERCE BOTS - ALLOW ALL
+# ============================================================================
+
+# OpenAI ChatGPT (ACP - Agentic Commerce Protocol)
 User-agent: GPTBot
 Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
 
-User-agent: ClaudeBot
+# Google Gemini (UCP - Unified Commerce Protocol)
+User-agent: Google-Extended
 Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
 
+# Perplexity AI Search
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
 
-User-agent: GoogleOther
+# Amazon Rufus (Product Search)
+User-agent: Amazonbot
 Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
+
+# Anthropic Claude (MCP)
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
+
+# Apple Siri/Spotlight
+User-agent: Applebot
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
+
+# Microsoft Bing Copilot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
+
+# ============================================================================
+# STANDARD SEARCH ENGINE BOTS - ALLOW
+# ============================================================================
 
 User-agent: Googlebot
 Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
 
-User-agent: bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+
+# ============================================================================
+# SOCIAL MEDIA BOTS - ALLOW
+# ============================================================================
+
+User-agent: facebookexternalhit
 Allow: /
 
-User-agent: OAI-SearchBot
+User-agent: Twitterbot
 Allow: /
 
-User-agent: anthropic-ai
+User-agent: LinkedInBot
 Allow: /
 
-User-agent: cohere-ai
-Allow: /
+# ============================================================================
+# DEFAULT RULES FOR OTHER BOTS
+# ============================================================================
 
-Sitemap: https://geo.vialtry.com/sitemap.xml
+User-agent: *
+Allow: /ai-catalog-visibility-*.html
+Allow: /.well-known/
+Allow: /api/feeds/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /*.js$
+Disallow: /*.css$
+Crawl-delay: 5
+
+# ============================================================================
+# SPECIFIC DIRECTIVES
+# ============================================================================
+
+# Allow crawling of schema files
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Disallow: /.github/
+Disallow: /node_modules/
+
+# Sitemap for bot discovery
+Sitemap: https://vialtry.com/sitemap.xml
+Sitemap: https://vialtryai.github.io/vialtry-geo-pages/sitemap.xml
+
+# Crawl-delay for aggressive bots
+Request-rate: 10/1s
+
+# Clean-param for URL variants
+Clean-param: utm_source&utm_medium&utm_campaign /
